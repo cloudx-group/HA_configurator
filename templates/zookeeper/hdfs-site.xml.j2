@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+	<property>
+		<name>dfs.replication</name>
+		<value>{{ hadoop_hdfs_replication }}</value>
+	</property>
+	<property>
+		<name>dfs.blocksize</name>
+		<value>{{ hadoop_hdfs_blocksize }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.name.dir</name>
+		<value>file://{{ hadoop_hdfs_namenode_name_dir }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.rpc-bind-host</name>
+		<value>{{ hadoop_hdfs_namenode_rpc_bind_host }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.servicerpc-bind-host</name>
+		<value>{{ hadoop_hdfs_namenode_servicerpc_bind_host }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.http-bind-host</name>
+		<value>{{ hadoop_hdfs_namenode_http_bind_host }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+		<value>{{ hadoop_hdfs_namenode_ip_hostname_check | lower }}</value>
+	</property>
+	<property>
+		<name>dfs.namenode.secondary.http-address</name>
+		<value>{{ hadoop_hdfs_namenode_rpc_bind_host }}:50090</value>
+	</property>
+	<property>
+		<name>dfs.namenode.checkpoint.dir</name>
+		<value>file://{{ hadoop_hdfs_namenode_checkpoint_dir }}</value>
+	</property>
+	<property>
+		<name>dfs.datanode.data.dir</name>
+		<value>file://{{ hadoop_hdfs_datanode_data_dir }}</value>
+	</property>
+
+	<!-- added while zookeeper configure-->
+	<!-- The logical name for this new nameservice -->
+	<property>
+		<name>dfs.nameservices</name>
+		<value>{{ dfs_nameservices }}</value>
+	</property>
+	<!-- dfs.ha.namenodes.[nameservice ID] - unique identifiers for each NameNode in the nameservice -->
+	<property>
+		<name>dfs.ha.namenodes.{{ dfs_nameservices }}</name>
+		<value>nn-1,nn-2,nn-3</value>
+	</property>
+	<!-- dfs.namenode.rpc-address.[nameservice ID].[name node ID] - the fully-qualified RPC address for each NameNode to listen on -->
+	<property>
+		<name>dfs.namenode.rpc-address.{{ dfs_nameservices }}.nn-1</name>
+		<value>{{ ip_nn1 }}:8020</value>
+	</property>
+	<property>
+		<name>dfs.namenode.rpc-address.{{ dfs_nameservices }}.nn-2</name>
+		<value>{{ ip_nn2 }}:8020</value>
+	</property>
+	<property>
+		<name>dfs.namenode.rpc-address.{{ dfs_nameservices }}.nn-3</name>
+		<value>{{ ip_nn3 }}:8020</value>
+	</property>
+	<!-- dfs.namenode.http-address.[nameservice ID].[name node ID] - the fully-qualified HTTP address for each NameNode to listen on -->
+	<property>
+		<name>dfs.namenode.http-address.{{ dfs_nameservices }}.nn-1</name>
+		<value>{{ ip_nn1 }}:9870</value>
+	</property>
+	<property>
+		<name>dfs.namenode.http-address.{{ dfs_nameservices }}.nn-2</name>
+		<value>{{ ip_nn2 }}:9870</value>
+	</property>
+	<property>
+		<name>dfs.namenode.http-address.{{ dfs_nameservices }}.nn-3</name>
+		<value>{{ ip_nn3 }}:9870</value>
+	</property>
+	<!-- dfs.namenode.shared.edits.dir - the URI which identifies the group of JNs where the NameNodes will write/read edits -->
+	<property>
+		<name>dfs.namenode.shared.edits.dir</name>
+		<value>qjournal://{{ ip_nn1 }}:8485;{{ ip_nn2 }}:8485;{{ ip_nn3 }}:8485/{{ dfs_nameservices }}</value>
+	</property>
+	<!-- dfs.client.failover.proxy.provider.[nameservice ID] -->
+	<property>
+		<name>dfs.client.failover.proxy.provider.{{ dfs_nameservices }}</name>
+		<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+	</property>
+
+    <!-- sshfence - SSH to the Active NameNode and kill the process -->
+    <property>
+      <name>dfs.ha.fencing.methods</name>
+      <value>
+      sshfence
+      shell(/bin/true)
+      </value>
+    </property>
+
+    <!-- Timeout limit for interrupt connection -->
+    <property>
+      <name>dfs.ha.fending.ssh.connect-timeout</name>
+      <value>3000</value>
+    </property>
+
+    <property>
+      <name>dfs.ha.fencing.ssh.private-key-files</name>
+      <value>/home/hadoop/.ssh/authorized_keys</value>
+    </property>
+
+	<!-- dfs.ha.nn.not-become-active-in-safemode - if prevent safe mode namenodes to become active -->
+	<!--
+	<property>
+		<name>dfs.ha.nn.not-become-active-in-safemode</name>
+		<value>true</value>
+	</property>
+	-->
+
+    <!-- The configuration of automatic failover requires this property-->
+	 <property>
+        <name>dfs.ha.automatic-failover.enabled</name>
+        <value>true</value>
+     </property>
+
+</configuration>

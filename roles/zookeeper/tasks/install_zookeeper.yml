@@ -1,0 +1,61 @@
+# Install Zookeeper
+- name: Check dir
+  stat:
+    path: "{{ zookeeper_tmp_path }}"
+  register: zookeeper_tmp_path_exists
+
+- name: Create dir
+  file:
+    path: "{{ zookeeper_tmp_path }}"
+    state: directory
+  when: zookeeper_tmp_path_exists.stat.exists == false
+
+- name: GET apache-zookeeper distr
+  get_url:
+    url: "{{ zookeeper_file_url }}"
+    dest: "{{ zookeeper_tmp_path }}"
+  when: true
+
+- name: Set apache-zookeeper distr file name
+  set_fact:
+    zookeeper_distr_file_name: "{{ zookeeper_file_url.split('/')[-1] }}"
+
+- name: Set zeppelin distribute path
+  set_fact:
+    zookeeper_distr_path_name: "{{ zookeeper_distr_file_name.split('.tar.gz')[0] }}"
+
+- name: Unpack zookeeper distr
+  unarchive:
+    src: "{{ zookeeper_tmp_path }}/{{ zookeeper_distr_file_name }}"
+    dest: "{{ zookeeper_tmp_path }}"
+    list_files: yes
+    remote_src: yes
+  register: zookeeper_archive_contents
+  when: true
+
+- name: Recursively change ownership of a directory
+  ansible.builtin.file:
+    path: "{{ zookeeper_tmp_path }}/{{ zookeeper_distr_path_name }}"
+    state: directory
+    recurse: yes
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+
+- name: "move {{ zookeeper_tmp_path }}/{{ zookeeper_distr_path_name }} to {{ zookeeper_home }}"
+  copy:
+    remote_src: true
+    src: "{{ zookeeper_tmp_path }}/{{ zookeeper_distr_path_name }}/"
+    dest: "{{ zookeeper_home }}/"
+
+- name: Recursively change ownership of a directory
+  ansible.builtin.file:
+    path: "{{ zookeeper_home }}"
+    state: directory
+    recurse: yes
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+
+- name: "Remove arhive {{ zookeeper_tmp_path }}"
+  file:
+    path:  "{{ zookeeper_tmp_path }}"
+    state: absent
