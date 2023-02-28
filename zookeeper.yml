@@ -1,0 +1,5 @@
+---
+# Deploy zookeeper
+- hosts: zookeeper
+  roles:
+     - zookeeper

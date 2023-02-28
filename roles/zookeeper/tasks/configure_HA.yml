@@ -1,0 +1,130 @@
+- name: Creating nodes list
+  set_fact:
+   name_nodes: "['nn-1', 'nn-2', 'nn-3']"
+   main_node: "['nn-1']"
+   secondary_nodes: "['nn-2', 'nn-3']"
+   data_nodes: "['dn-1', 'dn-2', 'dn-3', 'dn-4']"
+
+- name: Check hdfs service is active
+  shell: systemctl status hdfs-namenode.service | grep Active | awk -v N=2 '{print $N}'
+  register: output
+
+- name: Stop hdfs service on name node
+  service:
+    name: hdfs-namenode
+    state: stopped
+    enabled: no
+  when: output.stdout == 'active'
+
+- name: Check QJM service is active
+  shell: systemctl status hdfs-journalnode.service | grep Active | awk -v N=2 '{print $N}'
+  register: output
+
+- name: Stop QJM on name nodes
+  service:
+    name: hdfs-journalnode
+    state: stopped
+    enabled: no
+  when: output.stdout == 'active'
+
+- name: Copy hdfs-site.xml HDFS High Availability configured, backing up the original if it differs from the copied version
+  template:
+    src: 'zookeeper/hdfs-site.xml.j2'
+    dest: '{{ hadoop_properties_dir }}/hdfs-site.xml'
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+    backup: yes
+  when: "inventory_hostname in name_nodes"
+
+# Update xml properties on cluster (all nodes)
+- name: Copy core-site.xml, backing up the original if it differs from the copied version
+  template:
+    src: 'zookeeper/core-site.xml.j2'
+    dest: '{{ hadoop_properties_dir }}/core-site.xml'
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+    backup: yes
+
+- name: Copy hdfs-site.xml, backing up the original if it differs from the copied version
+  template:
+    src: 'zookeeper/hdfs-site.xml.j2'
+    dest: '{{ hadoop_properties_dir }}/hdfs-site.xml'
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+    backup: yes
+
+# Copy zookeeper cfg
+- name: Copy zookeeper config file
+  template:
+    src: zookeeper/zoo.cfg.j2
+    dest: "{{ zookeeper_home }}/conf/zoo.cfg"
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+  when: "inventory_hostname in name_nodes"
+
+# Create and start service dfs-journalnode on namenodes
+- name: create hdfs-journalnode.service systemd service file
+  template:
+    src: systemd/hdfs-journalnode.service.j2
+    dest: /etc/systemd/system/hdfs-journalnode.service
+  notify:
+    - restart reload_systemd
+    - restart hdfs-journalnode
+  when: "inventory_hostname in name_nodes"
+
+- name: start hdfs-journalnode
+  service:
+    name: hdfs-journalnode
+    state: started
+    enabled: yes
+  when: "inventory_hostname in name_nodes"
+
+# Set position in queue to switch
+- name: Initialize Zookeeper Server
+  command: "{{ hadoop_target_dir }}/bin/zkServer-initialize.sh  --configfile=/opt/hadoop/zookeeper/bin/../conf/zoo.cfg --myid=$(echo "{{ inventory_hostname }}" | sed "s/nn-//g") --force"
+  when: "inventory_hostname in name_nodes"
+
+# Create and start zookeeper service on namenodes
+- name: Copy zookeeper systemd service file
+  template:
+    src: systemd/zookeeper_server.service.j2
+    dest: /etc/systemd/system/zookeeper_server.service
+  notify:
+    - restart reload_systemd
+    - restart zookeeper_server
+  when: "inventory_hostname in name_nodes"
+
+# On the first namenode (as user hdfs)
+- name: Fresh HDFS cluster
+  command: "{{ hadoop_target_dir }}/bin/hdfs namenode -format -clusterId {{ dfs_nameservices }} -force"
+  when: "inventory_hostname in main_node"
+
+- name: Run to share data from the local NameNode
+  command: "{{ hadoop_target_dir }}/bin/hdfs namenode -initializeSharedEdits -force"
+  when: "inventory_hostname in main_node"
+
+# Start that first namenode
+- name: Start hdfs service on the first name node
+  ansible.builtin.service:
+    name: hdfs-namenode
+    state: started
+    enabled: yes
+  when: "inventory_hostname in main_node"
+
+#- name: Set active name node {{ hadoop_master_host }}
+#  command: "{{ hadoop_target_dir }}/bin/hdfs haadmin -transitionToActive {{ hadoop_master_host }}"
+#  when: "inventory_hostname in main_node"
+
+#On the second namenode
+- name: Run bootstrapStandby on the secondary name nodes
+  command: "{{ hadoop_target_dir }}/bin/hdfs namenode -bootstrapStandby -force"
+  when: "inventory_hostname in secondary_nodes"
+
+#start scondary namenode
+- name: Start hdfs service on the first name node
+  ansible.builtin.service:
+    name: hdfs-namenode
+    state: started
+    enabled: yes
+  when: "inventory_hostname in secondary_nodes"
+

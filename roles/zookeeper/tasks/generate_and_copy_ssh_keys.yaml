@@ -1,0 +1,28 @@
+- name: Generate an OpenSSH keypair with the default values (4096 bits, rsa)
+  openssh_keypair:
+    path: "/home/{{ hadoop_user }}/.ssh/id_rsa_{{ inventory_hostname }}"
+    size: 2048
+    force: true
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_group }}"
+
+- name: Fetch all public ssh keys
+  shell: cat /home/{{ hadoop_user }}/.ssh/id_rsa_{{ inventory_hostname }}.pub
+  register: ssh_keys
+  tags:
+    - ssh
+
+- name: Check keys
+  debug: msg="{{ ssh_keys.stdout }}"
+  tags:
+    - ssh
+
+# All of the kyes will write to authorized_keys file /home/{{ hadoop_user }}/.ssh
+- name: Deploy keys on all servers
+  authorized_key: user="{{ hadoop_user }}" key="{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{groups['zookeeper']}}"
+  tags:
+    - ssh

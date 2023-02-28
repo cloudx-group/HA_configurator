@@ -1,0 +1,32 @@
+- name: restart hdfs-namenode
+  service:
+    name: hdfs-namenode
+    state: restarted
+  when: hadoop_hdfs_namenode is defined and hadoop_hdfs_namenode
+
+- name: hdfs-journalnode
+  service:
+    name: hdfs-journalnode
+    state: restarted
+  when: hadoop_hdfs_journalnode is defined and hadoop_hdfs_journalnode
+
+- name: refresh hdfs-nodes
+  command: "{{ hadoop_home }}/bin/hdfs dfsadmin -refreshNodes"
+  when: hadoop_hdfs_namenode is defined and hadoop_hdfs_namenode
+
+- name: restart hdfs-zkfc
+  service:
+    name: hdfs-zkfc
+    state: restarted
+  when: hdfs-zkfc is defined and hdfs-zkfc
+
+- name: restart zookeeper_server
+  service:
+    name: zookeeper_server
+    state: restarted
+  when: zookeeper_server is defined and zookeeper_server
+
+- name: reload_systemd
+  systemd:
+    daemon_reload: yes
+  #command: systemctl daemon-reload

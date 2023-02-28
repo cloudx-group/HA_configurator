@@ -1,0 +1,32 @@
+#User & groupe
+hadoop_user: hadoop
+hadoop_group: hadoop
+
+# Hadoop source and target
+hadoop_target_dir: /opt/hadoop
+hadoop_properties_dir: "{{ hadoop_target_dir }}/etc/hadoop"
+
+#zookeeper
+zookeeper_file_url: https://dlcdn.apache.org/zookeeper/stable/apache-zookeeper-3.7.1.tar.gz
+zookeeper_tmp_path: "{{ hadoop_target_dir }}/zookeeper_tmp"
+zookeeper_home: "{{ hadoop_target_dir }}/zookeeper"
+
+# JAVA_HOME
+hadoop_java_home: /usr/lib/jvm/java-8-openjdk-amd64
+
+#HDFS settigns
+ip_nn1:	192.168.6.164
+ip_nn2:	192.168.6.161
+ip_nn3:	192.168.6.192
+hadoop_master_host: nn-1
+hadoop_hdfs_master_host: "{{ hadoop_master_host }}"
+hadoop_hdfs_replication: 3
+hadoop_hdfs_blocksize: 536870912
+hadoop_hdfs_namenode_name_dir: "{{ hadoop_target_dir }}/hdfs/namenoda"
+hadoop_hdfs_namenode_rpc_bind_host: 0.0.0.0
+hadoop_hdfs_namenode_servicerpc_bind_host: "{{ hadoop_hdfs_namenode_rpc_bind_host }}"
+hadoop_hdfs_namenode_http_bind_host: "{{ hadoop_hdfs_namenode_rpc_bind_host }}"
+hadoop_hdfs_namenode_ip_hostname_check: true
+hadoop_hdfs_namenode_checkpoint_dir: "{{ hadoop_target_dir }}/hdfs/checkpoint"
+hadoop_hdfs_datanode_data_dir: "{{ hadoop_target_dir }}/hdfs/datanoda"
+dfs_nameservices: "HA_cx_cloud_datalake"

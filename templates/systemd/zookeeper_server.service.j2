@@ -1,0 +1,11 @@
+[Unit]
+Description=hadoop cx exporter for prometheus
+
+[Service]
+User={{ hadoop_user }}
+Group={{ hadoop_group }}
+Environment=ZOOKEEPER_HOME={{ hadoop_target_dir }}/zookeeper
+WorkingDirectory={{ zookeeper_home }}
+ExecStart={{ zookeeper_home }}/bin/zkServer.sh start
+ExecStop={{ zookeeper_home }}/bin/zkServer.sh stop
+RestartSec=2
