@@ -1,0 +1,5 @@
+---
+# Setup hdfs High Availability
+- hosts: hdfsHA
+  roles:
+     - hdfsHA

@@ -29,7 +29,7 @@
 
 - name: Copy hdfs-site.xml HDFS High Availability configured, backing up the original if it differs from the copied version
   template:
-    src: 'zookeeper/hdfs-site.xml.j2'
+    src: 'hdfsHA/hdfs-site.xml.j2'
     dest: '{{ hadoop_properties_dir }}/hdfs-site.xml'
     owner: '{{ hadoop_user }}'
     group: '{{ hadoop_group }}'
@@ -39,7 +39,7 @@
 # Update xml properties on cluster (all nodes)
 - name: Copy core-site.xml, backing up the original if it differs from the copied version
   template:
-    src: 'zookeeper/core-site.xml.j2'
+    src: 'hdfsHA/core-site.xml.j2'
     dest: '{{ hadoop_properties_dir }}/core-site.xml'
     owner: '{{ hadoop_user }}'
     group: '{{ hadoop_group }}'
@@ -47,7 +47,7 @@
 
 - name: Copy hdfs-site.xml, backing up the original if it differs from the copied version
   template:
-    src: 'zookeeper/hdfs-site.xml.j2'
+    src: 'hdfsHA/hdfs-site.xml.j2'
     dest: '{{ hadoop_properties_dir }}/hdfs-site.xml'
     owner: '{{ hadoop_user }}'
     group: '{{ hadoop_group }}'
@@ -56,7 +56,7 @@
 # Copy zookeeper cfg
 - name: Copy zookeeper config file
   template:
-    src: zookeeper/zoo.cfg.j2
+    src: 'hdfsHA/zoo.cfg.j2'
     dest: "{{ zookeeper_home }}/conf/zoo.cfg"
     owner: '{{ hadoop_user }}'
     group: '{{ hadoop_group }}'
