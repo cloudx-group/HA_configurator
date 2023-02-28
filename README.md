@@ -14,7 +14,7 @@ In order to deploy an Fast Auto Failover HA cluster, you should prepare the foll
 Note that, in an HA cluster, the Standby NameNodes also performs checkpoints of the namespace state, and thus it is not necessary to run a Secondary NameNode, CheckpointNode, or BackupNode in an HA cluster. In fact, to do so would be an error. This also allows one who is reconfiguring a non-HA-enabled HDFS cluster to be HA-enabled to reuse the hardware which they had previously dedicated to the Secondary NameNode.
 
 ## How to Run
--> FastAutoFailover (main): Run zookeeper.yml
+-> FastAutoFailover (main): Run setupHA.yml
 
 
 ## Verifying automatic failover
