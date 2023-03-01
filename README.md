@@ -26,5 +26,5 @@ Once you have located your active NameNode, you may cause a failure on that node
 <br><br>![Dashboard screenshot](./docs/HA_HDFS_Switch_Example.png)
 
 ## Copyright and license
-- [Copyright](https://github.com/cloudx-group/cxhadoop/blob/dev_budnevgv/cloudx/prometheus_exporter/COPYRIGHT)
+- [Copyright](./COPYRIGHT)
 - Code released under the [Company](https://www.cloudx.group/)
