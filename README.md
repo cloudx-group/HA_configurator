@@ -1,4 +1,4 @@
-<h1 align="center">FastAutoFailover</h1>
+<h1 align="center">HA_configurator</h1>
 
 ## About
 
